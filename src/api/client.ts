@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 
-const API_URL = (import.meta as any).env?.VITE_API_URL || '/api/v1';
+const API_URL = import.meta.env.VITE_API_URL || 'https://jobbee-jhq5.onrender.com/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_URL,
