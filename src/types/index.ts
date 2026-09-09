@@ -58,6 +58,7 @@ export interface CVVersion {
   attachment_file?: string;
   is_default: boolean;
   updated_date?: string;
+  applications_count?: number;
 }
 
 export interface Employer {

@@ -109,13 +109,23 @@ export const CVManagerView: React.FC = () => {
     }
   };
 
-  const handleDelete = async (cvId: number) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa bản CV này?')) {
+  const handleDelete = async (cv: CVVersion) => {
+    if (cv.applications_count && cv.applications_count > 0) {
+      const msg = `Không thể xóa bản CV "${cv.cv_name}" vì bạn đã dùng nó để nộp ${cv.applications_count} đơn ứng tuyển cho Nhà tuyển dụng.\n\nĐể sử dụng hồ sơ mới, vui lòng tải lên tệp CV mới và nhấn "Đặt làm mặc định".`;
+      setStatusMsg({ type: 'error', text: msg });
+      alert(msg);
+      return;
+    }
+
+    if (window.confirm(`Bạn có chắc chắn muốn xóa bản CV "${cv.cv_name}"?`)) {
       try {
-        await profileApi.deleteCV(cvId);
+        await profileApi.deleteCV(cv.id);
+        setStatusMsg({ type: 'success', text: 'Đã xóa bản CV thành công!' });
         loadCVs();
       } catch (err: any) {
-        alert(err.response?.data?.message || 'Không thể xóa bản CV');
+        const msg = err.response?.data?.message || 'Không thể xóa bản CV';
+        setStatusMsg({ type: 'error', text: msg });
+        alert(msg);
       }
     }
   };
@@ -196,10 +206,17 @@ export const CVManagerView: React.FC = () => {
               >
                 <div className="space-y-4">
                   {/* Badge header */}
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60">
-                      {cv.career_orientation || 'Chung'}
-                    </span>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60">
+                        {cv.career_orientation || 'Chung'}
+                      </span>
+                      {cv.applications_count !== undefined && cv.applications_count > 0 && (
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200" title="CV đã dùng nộp đơn ứng tuyển">
+                          Đã nộp: {cv.applications_count} đơn
+                        </span>
+                      )}
+                    </div>
                     {cv.is_default ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                         <Check className="w-3 h-3" />
@@ -263,9 +280,17 @@ export const CVManagerView: React.FC = () => {
                       <Edit3 className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(cv.id)}
-                      className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                      title="Xóa CV"
+                      onClick={() => handleDelete(cv)}
+                      className={`p-2 rounded-xl transition-colors ${
+                        cv.applications_count && cv.applications_count > 0
+                          ? 'text-slate-300 hover:text-amber-600 hover:bg-amber-50 cursor-pointer'
+                          : 'text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer'
+                      }`}
+                      title={
+                        cv.applications_count && cv.applications_count > 0
+                          ? `CV này đã nộp ${cv.applications_count} đơn ứng tuyển (không thể xóa)`
+                          : 'Xóa CV'
+                      }
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
