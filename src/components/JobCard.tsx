@@ -92,16 +92,23 @@ export const JobCard: React.FC<JobCardProps> = ({
         )}
       </div>
 
-      {/* Meta tags (Salary, Location, Type) */}
-      <div className="flex flex-wrap gap-2 text-xs mb-3.5">
+      {/* Meta tags (Salary, Location, Province, Type) */}
+      <div className="flex flex-wrap gap-2 text-xs mb-2.5">
         <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50/80 px-2.5 py-1 rounded-lg border border-emerald-200/50">
           <DollarSign className="w-3.5 h-3.5" />
           {job.salary}
         </span>
-        <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
-          <MapPin className="w-3.5 h-3.5 text-slate-400" />
-          {job.location}
-        </span>
+        {job.province_name ? (
+          <span className="inline-flex items-center gap-1 text-slate-700 bg-slate-100 font-medium px-2.5 py-1 rounded-lg border border-slate-200/60">
+            <MapPin className="w-3.5 h-3.5 text-blue-600" />
+            {job.province_name}
+          </span>
+        ) : job.location ? (
+          <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+            <MapPin className="w-3.5 h-3.5 text-slate-400" />
+            {job.location}
+          </span>
+        ) : null}
         {isSmallJob ? (
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="inline-flex items-center gap-1 font-semibold text-amber-800 bg-amber-100/70 px-2.5 py-1 rounded-lg border border-amber-300/50">
@@ -124,6 +131,28 @@ export const JobCard: React.FC<JobCardProps> = ({
           </span>
         )}
       </div>
+
+      {/* Industry / Skills Tags */}
+      {((job.industries && job.industries.length > 0) || (job.tags && job.tags.length > 0)) && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {job.industries?.map((ind) => (
+            <span
+              key={ind.id}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 bg-indigo-50/90 px-2 py-0.5 rounded-md border border-indigo-100"
+            >
+              #{ind.name}
+            </span>
+          ))}
+          {job.tags?.map((t, idx) => (
+            <span
+              key={idx}
+              className="inline-flex items-center text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"
+            >
+              #{t}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Small job specific details if applicable */}
       {isSmallJob && (job.small_job || job.positions_needed) && (

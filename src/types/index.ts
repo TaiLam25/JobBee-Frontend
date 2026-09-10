@@ -96,6 +96,19 @@ export interface AccountReview {
   reviewer_company_avatar?: string;
 }
 
+export interface Province {
+  id: number;
+  name: string;
+  type: 'tinh' | 'thanh_pho';
+}
+
+export interface Industry {
+  id: number;
+  name: string;
+  slug: string;
+  icon?: string;
+}
+
 export interface JobPosting {
   id: number;
   employer_id: number;
@@ -109,6 +122,11 @@ export interface JobPosting {
   benefits?: string;
   salary: string;
   location: string;
+  province_id?: number;
+  province_name?: string;
+  province_type?: 'tinh' | 'thanh_pho';
+  industries?: Industry[];
+  tags?: string[];
   job_type: JobType;
   approval_status: ApprovalStatus;
   posted_date: string;

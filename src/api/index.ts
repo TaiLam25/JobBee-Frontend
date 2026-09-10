@@ -19,6 +19,8 @@ import type {
   AccountReview,
   PaginationMeta,
   VerificationDocumentInfo,
+  Province,
+  Industry,
 } from '../types';
 
 // ==========================================
@@ -133,7 +135,21 @@ export const profileApi = {
 // 3. JOB & SMALL JOB API
 // ==========================================
 export const jobApi = {
-  getJobs: async (params?: { page?: number; limit?: number; search?: string; job_type?: string; location?: string; salary_range?: string; sort?: string }) => {
+  getJobs: async (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    job_type?: string;
+    location?: string;
+    province_id?: number | string;
+    province_ids?: (number | string)[];
+    industry_id?: number | string;
+    industry_ids?: (number | string)[];
+    tag?: string;
+    tags?: string | string[];
+    salary_range?: string;
+    sort?: string;
+  }) => {
     const res = await apiClient.get('/jobs', { params });
     const rawData = res.data?.data;
     const rawMeta = res.data?.meta;
@@ -173,6 +189,20 @@ export const jobApi = {
   getPlatformStats: async () => {
     const res = await apiClient.get('/jobs/platform-stats');
     return (res.data?.data || res.data) as PlatformStats;
+  },
+};
+
+// ==========================================
+// PROVINCE & INDUSTRY API
+// ==========================================
+export const provinceApi = {
+  getProvinces: async (type?: 'tinh' | 'thanh_pho') => {
+    const res = await apiClient.get('/provinces', { params: type ? { type } : undefined });
+    return (res.data?.data || res.data || []) as Province[];
+  },
+  getIndustries: async () => {
+    const res = await apiClient.get('/industries');
+    return (res.data?.data || res.data || []) as Industry[];
   },
 };
 

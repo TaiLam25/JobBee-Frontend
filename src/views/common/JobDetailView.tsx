@@ -213,15 +213,36 @@ export const JobDetailView: React.FC<JobDetailViewProps> = ({
               </h1>
 
               <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-500 pt-1">
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                  {job.location}
+                <span className="flex items-center gap-1 font-medium text-slate-700">
+                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                  {job.province_name ? `${job.province_name} (${job.location})` : job.location}
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
                   Đăng ngày: {new Date(job.posted_date).toLocaleDateString('vi-VN')}
                 </span>
               </div>
+
+              {((job.industries && job.industries.length > 0) || (job.tags && job.tags.length > 0)) && (
+                <div className="flex flex-wrap gap-1.5 pt-2">
+                  {job.industries?.map((ind) => (
+                    <span
+                      key={ind.id}
+                      className="inline-flex items-center text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100"
+                    >
+                      #{ind.name}
+                    </span>
+                  ))}
+                  {job.tags?.map((t, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg"
+                    >
+                      #{t}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
