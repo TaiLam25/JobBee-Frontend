@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, 
   MapPin, 
+  Briefcase,
   Filter, 
   ShieldCheck, 
   RotateCcw,
@@ -109,17 +110,17 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
     filters.verifiedOnly;
 
   return (
-    <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-sm space-y-4">
-      {/* Row 1: Primary Inputs (Keyword, 34 Provinces, Sort, Reset) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+    <div className="bg-white rounded-3xl p-4 sm:p-6 border border-slate-200/90 shadow-sm space-y-3.5">
+      {/* Row 1: Primary Inputs (Keyword, 34 Provinces, Industry, Sort, Reset) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5">
         {/* Keyword Search */}
-        <div className="lg:col-span-5 flex items-center gap-2 px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all">
+        <div className="lg:col-span-3 flex items-center gap-2 px-3 py-2 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
           <input
             type="text"
             value={filters.keyword}
             onChange={(e) => onChange({ ...filters, keyword: e.target.value })}
-            placeholder="Chức danh, vị trí, công ty..."
+            placeholder="Chức danh, từ khóa..."
             className="w-full bg-transparent text-xs sm:text-sm focus:outline-hidden text-slate-800 placeholder:text-slate-400 font-medium"
           />
           {filters.keyword && (
@@ -134,7 +135,7 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
         </div>
 
         {/* 34 Tỉnh / Thành phố Combobox */}
-        <div className="lg:col-span-4 flex items-center gap-2 px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 transition-all">
+        <div className="lg:col-span-3 flex items-center gap-2 px-3 py-2 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 transition-all">
           <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
           <select
             value={filters.provinceId || ''}
@@ -148,7 +149,7 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
           >
             <option value="">📍 Tất cả 34 tỉnh/thành</option>
             {cities.length > 0 && (
-              <optgroup label="🏢 6 Thành phố trực thuộc Trung ương">
+              <optgroup label="🏢 6 Thành phố trực thuộc TW">
                 {cities.map((city) => (
                   <option key={city.id} value={city.id}>
                     {city.name}
@@ -168,8 +169,38 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
           </select>
         </div>
 
+        {/* Ngành nghề & Lĩnh vực Combobox */}
+        <div className="lg:col-span-3 flex items-center gap-2 px-3 py-2 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 transition-all">
+          <Briefcase className="w-4 h-4 text-indigo-600 shrink-0" />
+          <select
+            value={filters.selectedIndustryIds.length === 1 ? filters.selectedIndustryIds[0] : (filters.selectedIndustryIds.length > 1 ? 'multi' : '')}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (!val) {
+                onChange({ ...filters, selectedIndustryIds: [] });
+              } else if (val !== 'multi') {
+                const id = Number(val);
+                onChange({ ...filters, selectedIndustryIds: [id] });
+              }
+            }}
+            className="w-full bg-transparent text-xs sm:text-sm focus:outline-hidden text-slate-800 font-medium cursor-pointer truncate"
+          >
+            <option value="">💼 Tất cả ngành nghề</option>
+            {filters.selectedIndustryIds.length > 1 && (
+              <option value="multi" disabled>
+                Đã chọn {filters.selectedIndustryIds.length} ngành
+              </option>
+            )}
+            {industries.map((ind) => (
+              <option key={ind.id} value={ind.id}>
+                {ind.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Sort By */}
-        <div className="lg:col-span-2 flex items-center gap-2 px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 transition-all">
+        <div className="lg:col-span-2 flex items-center gap-2 px-3 py-2 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 transition-all">
           <Filter className="w-4 h-4 text-slate-400 shrink-0" />
           <select
             value={filters.sortBy}
@@ -177,7 +208,7 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
             className="w-full bg-transparent text-xs sm:text-sm focus:outline-hidden text-slate-800 font-medium cursor-pointer"
           >
             <option value="posted_date_desc">Mới nhất</option>
-            <option value="trust_score_desc">Uy tín cao nhất</option>
+            <option value="trust_score_desc">Uy tín cao</option>
             <option value="posted_date_asc">Cũ nhất</option>
           </select>
         </div>
@@ -187,9 +218,9 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
           <button
             onClick={onReset}
             title="Đặt lại toàn bộ bộ lọc"
-            className="w-full h-full min-h-[42px] px-3 rounded-2xl border border-slate-200 hover:bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            className="w-full h-full min-h-[38px] px-2.5 rounded-2xl border border-slate-200 hover:bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
-            <RotateCcw className="w-4 h-4 text-slate-500" />
+            <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
             <span className="lg:hidden">Đặt lại</span>
           </button>
         </div>

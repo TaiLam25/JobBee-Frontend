@@ -108,7 +108,7 @@ export const SalaryRangeFilter: React.FC<SalaryRangeFilterProps> = ({
   };
 
   const PRESETS = [
-    { label: 'Tất cả mức lương', min: null, max: null },
+    { label: 'Tất cả', min: null, max: null },
     { label: '< 10 triệu', min: 0, max: 10000000 },
     { label: '10 - 20 triệu', min: 10000000, max: 20000000 },
     { label: '20 - 35 triệu', min: 20000000, max: 35000000 },
@@ -116,13 +116,13 @@ export const SalaryRangeFilter: React.FC<SalaryRangeFilterProps> = ({
   ];
 
   return (
-    <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 space-y-4">
+    <div className="p-3 sm:p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2.5">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
-        <div className="flex items-center gap-2 font-bold text-slate-800">
-          <DollarSign className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Khoảng lương (Dual Range Slider):</span>
-          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-extrabold">
+        <div className="flex items-center gap-1.5 font-bold text-slate-800">
+          <DollarSign className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <span className="text-xs">Khoảng lương:</span>
+          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
             {isCustom ? `${formatVndAmountCompact(sliderRange[0])} - ${formatVndAmountCompact(sliderRange[1])}` : 'Mọi mức lương'}
           </span>
         </div>
@@ -131,19 +131,19 @@ export const SalaryRangeFilter: React.FC<SalaryRangeFilterProps> = ({
         <button
           type="button"
           onClick={handleToggleNegotiable}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-indigo-700 cursor-pointer select-none transition-colors"
+          className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 hover:text-indigo-700 cursor-pointer select-none transition-colors"
         >
           {includeNegotiable ? (
-            <CheckSquare className="w-4 h-4 text-indigo-600" />
+            <CheckSquare className="w-3.5 h-3.5 text-indigo-600" />
           ) : (
-            <Square className="w-4 h-4 text-slate-400" />
+            <Square className="w-3.5 h-3.5 text-slate-400" />
           )}
           <span>Bao gồm tin Thỏa thuận</span>
         </button>
       </div>
 
       {/* Slider */}
-      <div className="px-3 pt-4 pb-2">
+      <div className="px-2 pt-2.5 pb-1">
         <Slider
           range
           min={bounds.min}
@@ -152,30 +152,30 @@ export const SalaryRangeFilter: React.FC<SalaryRangeFilterProps> = ({
           value={sliderRange}
           onChange={handleSliderChange}
           styles={{
-            track: { backgroundColor: '#4f46e5', height: 6 },
-            rail: { backgroundColor: '#cbd5e1', height: 6 },
+            track: { backgroundColor: '#4f46e5', height: 4 },
+            rail: { backgroundColor: '#cbd5e1', height: 4 },
             handle: {
               borderColor: '#4f46e5',
-              height: 18,
-              width: 18,
-              marginTop: -6,
+              height: 14,
+              width: 14,
+              marginTop: -5,
               backgroundColor: '#ffffff',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
               opacity: 1,
             },
           }}
         />
 
         {/* Min / Max Labels under slider */}
-        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mt-2">
+        <div className="flex items-center justify-between text-[10.5px] font-semibold text-slate-500 mt-1.5">
           <span>{formatVndAmount(sliderRange[0])}</span>
           <span>{formatVndAmount(sliderRange[1])}</span>
         </div>
       </div>
 
-      {/* Quick Preset Buttons */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-        <span className="text-slate-400 text-[11px] font-semibold shrink-0">Gợi ý nhanh:</span>
+      {/* Quick Preset Buttons (Compact) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-xs no-scrollbar">
+        <span className="text-slate-400 text-[10.5px] font-medium shrink-0">Mức gợi ý:</span>
         {PRESETS.map((p, idx) => {
           const isSelected =
             (p.min === null && p.max === null && !isCustom) ||
@@ -185,7 +185,7 @@ export const SalaryRangeFilter: React.FC<SalaryRangeFilterProps> = ({
               key={idx}
               type="button"
               onClick={() => applyPreset(p.min, p.max)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition-all cursor-pointer border ${
+              className={`px-2 py-0.5 rounded-md text-[10.5px] font-medium shrink-0 transition-all cursor-pointer border ${
                 isSelected
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
                   : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
