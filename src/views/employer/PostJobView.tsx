@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { User, JobType, Province, Industry } from '../../types';
 import { jobApi, companyApi, provinceApi } from '../../api';
+import { formatVndAmount } from '../../utils/salary';
 
 interface PostJobViewProps {
   user: User;
@@ -27,7 +28,9 @@ export const PostJobView: React.FC<PostJobViewProps> = ({
 }) => {
   const [jobType, setJobType] = useState<JobType>('full_time');
   const [title, setTitle] = useState('');
-  const [salary, setSalary] = useState('');
+  const [isNegotiable, setIsNegotiable] = useState(false);
+  const [salaryMin, setSalaryMin] = useState<number | ''>('');
+  const [salaryMax, setSalaryMax] = useState<number | ''>('');
   const [provinceId, setProvinceId] = useState<number | ''>('');
   const [locationDetail, setLocationDetail] = useState('');
   const [description, setDescription] = useState('');
@@ -107,6 +110,24 @@ export const PostJobView: React.FC<PostJobViewProps> = ({
       return;
     }
 
+    if (!isNegotiable) {
+      if (salaryMin === '' || salaryMax === '') {
+        setErrorMsg('Vui lòng nhập đầy đủ mức lương tối thiểu và tối đa (hoặc chọn Lương thỏa thuận).');
+        setLoading(false);
+        return;
+      }
+      if (Number(salaryMin) < 0 || Number(salaryMax) < 0) {
+        setErrorMsg('Mức lương không hợp lệ (phải lớn hơn hoặc bằng 0).');
+        setLoading(false);
+        return;
+      }
+      if (Number(salaryMin) > Number(salaryMax)) {
+        setErrorMsg('Mức lương tối thiểu không được lớn hơn mức lương tối đa.');
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const selectedProv = provinces.find(p => p.id === Number(provinceId));
       const locString = locationDetail 
@@ -115,7 +136,9 @@ export const PostJobView: React.FC<PostJobViewProps> = ({
 
       const payload: any = {
         title,
-        salary,
+        salary_min: isNegotiable ? null : Number(salaryMin),
+        salary_max: isNegotiable ? null : Number(salaryMax),
+        is_negotiable: isNegotiable,
         province_id: provinceId ? Number(provinceId) : undefined,
         location: locString,
         industry_ids: selectedIndustryIds,
@@ -378,58 +401,122 @@ export const PostJobView: React.FC<PostJobViewProps> = ({
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Mức lương / Thù lao
+          {/* Salary Section */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <DollarSign className="w-4 h-4 text-emerald-600" />
+                Mức lương / Thù lao *
               </label>
-              <div className="relative">
-                <DollarSign className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+              <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
-                  type="text"
-                  value={salary}
-                  onChange={(e) => setSalary(e.target.value)}
-                  placeholder="Vd: 15 - 25 triệu hoặc 300.000đ/ca"
-                  required
-                  className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  type="checkbox"
+                  checked={isNegotiable}
+                  onChange={(e) => {
+                    setIsNegotiable(e.target.checked);
+                    if (e.target.checked) {
+                      setSalaryMin('');
+                      setSalaryMax('');
+                    }
+                  }}
+                  className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
                 />
-              </div>
+                <span className="text-xs font-bold text-slate-700">Mức lương Thỏa thuận</span>
+              </label>
             </div>
 
-            {/* 34 Provinces Selector */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Tỉnh / Thành phố (Theo chuẩn 34 tỉnh mới) *
-              </label>
-              <div className="relative">
-                <MapPin className="w-4 h-4 text-blue-600 absolute left-3.5 top-3" />
-                <select
-                  value={provinceId}
-                  onChange={(e) => setProvinceId(e.target.value ? Number(e.target.value) : '')}
-                  required
-                  className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer font-medium"
-                >
-                  <option value="">-- Chọn Tỉnh / Thành phố --</option>
-                  {cities.length > 0 && (
-                    <optgroup label="🏢 6 Thành phố trực thuộc Trung ương">
-                      {cities.map((city) => (
-                        <option key={city.id} value={city.id}>
-                          {city.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  {provinceList.length > 0 && (
-                    <optgroup label="🌲 28 Tỉnh">
-                      {provinceList.map((prov) => (
-                        <option key={prov.id} value={prov.id}>
-                          {prov.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                </select>
+            {isNegotiable ? (
+              <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-xs font-medium text-emerald-800 flex items-center gap-2">
+                <span>💰 Mức lương hiển thị cho tin tuyển dụng này sẽ là <strong>Thỏa thuận</strong>. Ứng viên và nhà tuyển dụng sẽ tự thương lượng khi phỏng vấn.</span>
               </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-slate-600">
+                      Lương tối thiểu (VNĐ) *
+                    </label>
+                    <div className="relative">
+                      <DollarSign className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                      <input
+                        type="number"
+                        min={0}
+                        step={100000}
+                        value={salaryMin}
+                        onChange={(e) => setSalaryMin(e.target.value === '' ? '' : Number(e.target.value))}
+                        placeholder="Vd: 10000000"
+                        required={!isNegotiable}
+                        className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                      />
+                    </div>
+                    {salaryMin !== '' && typeof salaryMin === 'number' && salaryMin > 0 && (
+                      <p className="text-[11px] font-semibold text-emerald-600">
+                        ≈ {formatVndAmount(salaryMin)}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-slate-600">
+                      Lương tối đa (VNĐ) *
+                    </label>
+                    <div className="relative">
+                      <DollarSign className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                      <input
+                        type="number"
+                        min={0}
+                        step={100000}
+                        value={salaryMax}
+                        onChange={(e) => setSalaryMax(e.target.value === '' ? '' : Number(e.target.value))}
+                        placeholder="Vd: 20000000"
+                        required={!isNegotiable}
+                        className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                      />
+                    </div>
+                    {salaryMax !== '' && typeof salaryMax === 'number' && salaryMax > 0 && (
+                      <p className="text-[11px] font-semibold text-emerald-600">
+                        ≈ {formatVndAmount(salaryMax)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 34 Provinces Selector */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Tỉnh / Thành phố (Theo chuẩn 34 tỉnh mới) *
+            </label>
+            <div className="relative">
+              <MapPin className="w-4 h-4 text-blue-600 absolute left-3.5 top-3" />
+              <select
+                value={provinceId}
+                onChange={(e) => setProvinceId(e.target.value ? Number(e.target.value) : '')}
+                required
+                className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer font-medium"
+              >
+                <option value="">-- Chọn Tỉnh / Thành phố --</option>
+                {cities.length > 0 && (
+                  <optgroup label="🏢 6 Thành phố trực thuộc Trung ương">
+                    {cities.map((city) => (
+                      <option key={city.id} value={city.id}>
+                        {city.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                {provinceList.length > 0 && (
+                  <optgroup label="🌲 28 Tỉnh">
+                    {provinceList.map((prov) => (
+                      <option key={prov.id} value={prov.id}>
+                        {prov.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
             </div>
           </div>
 

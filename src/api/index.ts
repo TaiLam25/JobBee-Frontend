@@ -148,6 +148,9 @@ export const jobApi = {
     tag?: string;
     tags?: string | string[];
     salary_range?: string;
+    salary_min?: number | string;
+    salary_max?: number | string;
+    include_negotiable?: boolean | string;
     sort?: string;
   }) => {
     const res = await apiClient.get('/jobs', { params });
@@ -160,6 +163,10 @@ export const jobApi = {
       page: rawMeta?.page || 1,
       totalPages: rawMeta?.totalPages || 1,
     };
+  },
+  getSalaryRange: async () => {
+    const res = await apiClient.get('/jobs/salary-range');
+    return (res.data?.data || res.data) as { min: number; max: number };
   },
   getJobById: async (id: number) => {
     const res = await apiClient.get(`/jobs/${id}`);

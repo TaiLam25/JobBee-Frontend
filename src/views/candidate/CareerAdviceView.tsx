@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import type { JobPosting, AICareerGuidanceResult, RecommendedCareer, RoadmapPhase } from '../../types';
 import { aiApi } from '../../api';
+import { formatSalary } from '../../utils/salary';
 
 interface CareerAdviceViewProps {
   onViewJob: (job: JobPosting) => void;
@@ -451,7 +452,7 @@ export const CareerAdviceView: React.FC<CareerAdviceViewProps> = ({ onViewJob })
                       <div>
                         <span className="text-xs font-bold text-slate-400">{job.company_name || 'Doanh nghiệp'}</span>
                         <h4 className="text-base font-bold text-slate-900 line-clamp-1">{job.title}</h4>
-                        <p className="text-xs text-emerald-700 font-bold mt-0.5">{job.salary} · {job.location}</p>
+                        <p className="text-xs text-emerald-700 font-bold mt-0.5">{formatSalary(job)} · {job.location}</p>
                       </div>
                     </div>
 

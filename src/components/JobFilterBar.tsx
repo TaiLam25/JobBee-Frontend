@@ -3,7 +3,6 @@ import {
   Search, 
   MapPin, 
   Filter, 
-  DollarSign, 
   ShieldCheck, 
   RotateCcw,
   Tag,
@@ -12,12 +11,16 @@ import {
 } from 'lucide-react';
 import type { Province, Industry } from '../types';
 import { provinceApi } from '../api';
+import { SalaryRangeFilter } from './job/SalaryRangeFilter';
+import { formatVndAmountCompact } from '../utils/salary';
 
 export interface FilterState {
   keyword: string;
   provinceId?: number | null;
   selectedIndustryIds: number[];
-  salaryRange: string;
+  salaryMin: number | null;
+  salaryMax: number | null;
+  includeNegotiable: boolean;
   jobType: string;
   sortBy: string;
   verifiedOnly: boolean;
@@ -88,27 +91,29 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
   };
 
   const removeSalary = () => {
-    onChange({ ...filters, salaryRange: '' });
+    onChange({ ...filters, salaryMin: null, salaryMax: null, includeNegotiable: true });
   };
 
   const removeJobType = () => {
     onChange({ ...filters, jobType: 'all' });
   };
 
+  const hasSalaryFilter = filters.salaryMin !== null || filters.salaryMax !== null || !filters.includeNegotiable;
+
   const hasActiveFilters =
     filters.keyword ||
     filters.provinceId ||
     filters.selectedIndustryIds.length > 0 ||
-    filters.salaryRange ||
+    hasSalaryFilter ||
     filters.jobType !== 'all' ||
     filters.verifiedOnly;
 
   return (
     <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-sm space-y-4">
-      {/* Row 1: Primary Inputs (Keyword, 34 Provinces, Salary Range, Sort) */}
+      {/* Row 1: Primary Inputs (Keyword, 34 Provinces, Sort, Reset) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
         {/* Keyword Search */}
-        <div className="lg:col-span-4 flex items-center gap-2 px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all">
+        <div className="lg:col-span-5 flex items-center gap-2 px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
           <input
             type="text"
@@ -121,7 +126,7 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
             <button
               type="button"
               onClick={() => onChange({ ...filters, keyword: '' })}
-              className="text-slate-400 hover:text-slate-600"
+              className="text-slate-400 hover:text-slate-600 cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -129,7 +134,7 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
         </div>
 
         {/* 34 Tỉnh / Thành phố Combobox */}
-        <div className="lg:col-span-3 flex items-center gap-2 px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 transition-all">
+        <div className="lg:col-span-4 flex items-center gap-2 px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 transition-all">
           <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
           <select
             value={filters.provinceId || ''}
@@ -163,23 +168,6 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
           </select>
         </div>
 
-        {/* Salary Range */}
-        <div className="lg:col-span-2 flex items-center gap-2 px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 transition-all">
-          <DollarSign className="w-4 h-4 text-emerald-600 shrink-0" />
-          <select
-            value={filters.salaryRange}
-            onChange={(e) => onChange({ ...filters, salaryRange: e.target.value })}
-            className="w-full bg-transparent text-xs sm:text-sm focus:outline-hidden text-slate-800 font-medium cursor-pointer"
-          >
-            <option value="">💵 Mọi mức lương</option>
-            <option value="under_10">Dưới 10 triệu / ca</option>
-            <option value="10_20">10 - 20 triệu</option>
-            <option value="20_30">20 - 30 triệu</option>
-            <option value="above_30">Trên 30 triệu</option>
-            <option value="negotiable">Thỏa thuận</option>
-          </select>
-        </div>
-
         {/* Sort By */}
         <div className="lg:col-span-2 flex items-center gap-2 px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-500 transition-all">
           <Filter className="w-4 h-4 text-slate-400 shrink-0" />
@@ -207,7 +195,24 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
         </div>
       </div>
 
-      {/* Row 2: Industries / Tags Multi-Select Chips */}
+      {/* Row 2: Dual Range Slider for Salary */}
+      <SalaryRangeFilter
+        value={{
+          salaryMin: filters.salaryMin,
+          salaryMax: filters.salaryMax,
+          includeNegotiable: filters.includeNegotiable,
+        }}
+        onChange={(val) =>
+          onChange({
+            ...filters,
+            salaryMin: val.salaryMin,
+            salaryMax: val.salaryMax,
+            includeNegotiable: val.includeNegotiable,
+          })
+        }
+      />
+
+      {/* Row 3: Industries / Tags Multi-Select Chips */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5 font-bold text-slate-700">
@@ -222,7 +227,7 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
           <button
             type="button"
             onClick={() => setShowIndustryDropdown(!showIndustryDropdown)}
-            className="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 sm:hidden text-xs"
+            className="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 sm:hidden text-xs cursor-pointer"
           >
             <span>{showIndustryDropdown ? 'Thu gọn' : 'Xem tất cả ngành'}</span>
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showIndustryDropdown ? 'rotate-180' : ''}`} />
@@ -252,7 +257,7 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
         </div>
       </div>
 
-      {/* Row 3: Job Type Tabs & Verified Filter */}
+      {/* Row 4: Job Type Tabs & Verified Filter */}
       <div className="flex items-center justify-between flex-wrap gap-3 pt-3 border-t border-slate-100 text-xs">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-bold text-slate-500 mr-1">Hình thức:</span>
@@ -290,7 +295,7 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
         </label>
       </div>
 
-      {/* Row 4: Active Filter Chips Bar */}
+      {/* Row 5: Active Filter Chips Bar */}
       {hasActiveFilters && (
         <div className="flex items-center gap-2 flex-wrap pt-2.5 border-t border-slate-100 text-xs">
           <span className="text-slate-400 font-semibold text-[11px]">Đang lọc:</span>
@@ -328,14 +333,18 @@ export const JobFilterBar: React.FC<JobFilterBarProps> = ({
             </span>
           ))}
 
-          {filters.salaryRange && (
+          {hasSalaryFilter && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 font-medium text-xs border border-emerald-200/60">
               💵 Lương: {
-                filters.salaryRange === 'under_10' ? '< 10 triệu' :
-                filters.salaryRange === '10_20' ? '10 - 20 triệu' :
-                filters.salaryRange === '20_30' ? '20 - 30 triệu' :
-                filters.salaryRange === 'above_30' ? '> 30 triệu' : 'Thỏa thuận'
+                filters.salaryMin !== null && filters.salaryMax !== null
+                  ? `${formatVndAmountCompact(filters.salaryMin)} - ${formatVndAmountCompact(filters.salaryMax)}`
+                  : filters.salaryMin !== null
+                  ? `Từ ${formatVndAmountCompact(filters.salaryMin)}`
+                  : filters.salaryMax !== null
+                  ? `Tới ${formatVndAmountCompact(filters.salaryMax)}`
+                  : ''
               }
+              {!filters.includeNegotiable && ' (Không gồm thỏa thuận)'}
               <X
                 className="w-3 h-3 cursor-pointer hover:text-emerald-900"
                 onClick={removeSalary}

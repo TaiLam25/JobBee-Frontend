@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import type { JobPosting, User, CVVersion } from '../../types';
 import { profileApi, applicationApi, smallJobApi } from '../../api';
+import { formatSalary } from '../../utils/salary';
 
 interface JobDetailViewProps {
   job: JobPosting;
@@ -298,7 +299,7 @@ export const JobDetailView: React.FC<JobDetailViewProps> = ({
             <span className="text-slate-400 font-medium block">Mức lương / Thù lao</span>
             <span className="text-emerald-700 font-bold text-sm sm:text-base flex items-center gap-1 mt-0.5">
               <DollarSign className="w-4 h-4" />
-              {job.salary}
+              {formatSalary(job)}
             </span>
           </div>
           <div>

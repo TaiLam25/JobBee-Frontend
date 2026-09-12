@@ -13,6 +13,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import type { JobPosting } from '../types';
+import { formatSalary } from '../utils/salary';
 
 interface JobCardProps {
   job: JobPosting;
@@ -96,7 +97,7 @@ export const JobCard: React.FC<JobCardProps> = ({
       <div className="flex flex-wrap gap-2 text-xs mb-2.5">
         <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50/80 px-2.5 py-1 rounded-lg border border-emerald-200/50">
           <DollarSign className="w-3.5 h-3.5" />
-          {job.salary}
+          {formatSalary(job)}
         </span>
         {job.province_name ? (
           <span className="inline-flex items-center gap-1 text-slate-700 bg-slate-100 font-medium px-2.5 py-1 rounded-lg border border-slate-200/60">

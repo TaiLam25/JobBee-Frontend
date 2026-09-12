@@ -23,7 +23,9 @@ export const JobsView: React.FC<JobsViewProps> = ({
     keyword: initialFilter?.keyword || '',
     provinceId: null,
     selectedIndustryIds: [],
-    salaryRange: '',
+    salaryMin: null,
+    salaryMax: null,
+    includeNegotiable: true,
     jobType: initialFilter?.type || 'all',
     sortBy: 'posted_date_desc',
     verifiedOnly: false,
@@ -49,7 +51,9 @@ export const JobsView: React.FC<JobsViewProps> = ({
         province_id: filters.provinceId ? Number(filters.provinceId) : undefined,
         industry_ids: filters.selectedIndustryIds.length > 0 ? filters.selectedIndustryIds : undefined,
         job_type: filters.jobType !== 'all' ? filters.jobType : undefined,
-        salary_range: filters.salaryRange || undefined,
+        salary_min: filters.salaryMin !== null ? filters.salaryMin : undefined,
+        salary_max: filters.salaryMax !== null ? filters.salaryMax : undefined,
+        include_negotiable: filters.includeNegotiable,
         sort: filters.sortBy || undefined,
       });
 
@@ -79,7 +83,9 @@ export const JobsView: React.FC<JobsViewProps> = ({
       keyword: '',
       provinceId: null,
       selectedIndustryIds: [],
-      salaryRange: '',
+      salaryMin: null,
+      salaryMax: null,
+      includeNegotiable: true,
       jobType: 'all',
       sortBy: 'posted_date_desc',
       verifiedOnly: false,
@@ -100,7 +106,7 @@ export const JobsView: React.FC<JobsViewProps> = ({
             Tìm kiếm Việc làm & Ca làm linh hoạt
           </h1>
           <p className="text-xs sm:text-sm text-slate-300">
-            Bộ lọc tìm việc đa ngành nghề phủ sóng trên toàn bộ 34 Tỉnh/Thành phố mới của Việt Nam, kết hợp kiểm định an toàn chống lừa đảo.
+            Bộ lọc tìm việc đa ngành nghề phủ sóng trên toàn bộ 34 Tỉnh/Thành phố mới cùng thanh trượt khoảng lương chính xác và kiểm định an toàn.
           </p>
         </div>
       </div>
@@ -132,7 +138,7 @@ export const JobsView: React.FC<JobsViewProps> = ({
           <Building2 className="w-12 h-12 mx-auto text-slate-300" />
           <h3 className="text-base font-bold text-slate-800">Không tìm thấy công việc phù hợp</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Hãy thử thay đổi tỉnh/thành phố, bỏ bớt ngành nghề hoặc nới lỏng mức lương để xem thêm kết quả.
+            Hãy thử nới lỏng khoảng lương, thay đổi tỉnh/thành phố hoặc bỏ chọn bớt ngành nghề để xem thêm kết quả.
           </p>
           <button
             onClick={handleReset}

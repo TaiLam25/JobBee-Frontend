@@ -120,7 +120,10 @@ export interface JobPosting {
   job_description: string;
   requirements: string;
   benefits?: string;
-  salary: string;
+  salary?: string;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  is_negotiable?: boolean;
   location: string;
   province_id?: number;
   province_name?: string;
