@@ -500,19 +500,6 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate, onVi
                     Phân tích CV khác
                   </button>
                 </div>
-
-                {/* Profile Extracted Summary */}
-                {currentResult.extracted_summary && (
-                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-1">
-                    <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wide">
-                      <BarChart3 className="w-3.5 h-3.5 text-blue-600" />
-                      Tóm tắt hồ sơ năng lực
-                    </h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      {currentResult.extracted_summary}
-                    </p>
-                  </div>
-                )}
               </div>
 
               {/* Matching Job Postings List */}
