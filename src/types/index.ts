@@ -397,6 +397,11 @@ export interface AdminAnalyticsData {
     totalJobs: number;
     jobsByStatus: { approval_status: string; count: number }[];
     totalApplications: number;
+    totalSmallJobs?: number;
+    activeSmallJobs?: number;
+    smallJobRegistrations?: number;
+    aiCvAnalyses?: number;
+    aiChatbotSessions?: number;
   };
   accountsGrowth: AccountsGrowthItem[];
   jobPostingsGrowth: JobPostingsGrowthItem[];
@@ -405,6 +410,14 @@ export interface AdminAnalyticsData {
   employerVerificationBreakdown: VerificationBreakdownItem[];
   avgApprovalTime: AvgApprovalTime;
   jobsByIndustry: JobIndustryItem[];
+  salaryBreakdown?: {
+    negotiable: number;
+    under_10m: number;
+    from_10m_to_20m: number;
+    from_20m_to_30m: number;
+    above_30m: number;
+  };
+  topProvinces?: { name: string; count: number }[];
 }
 
 export interface PaginationMeta {

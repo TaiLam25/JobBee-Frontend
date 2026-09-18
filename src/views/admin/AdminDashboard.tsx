@@ -56,6 +56,8 @@ import { RoleDistributionChart } from '../../components/admin/charts/RoleDistrib
 import { VerificationBreakdownChart } from '../../components/admin/charts/VerificationBreakdownChart';
 import { AvgApprovalTimeCard } from '../../components/admin/charts/AvgApprovalTimeCard';
 import { JobsByIndustryChart } from '../../components/admin/charts/JobsByIndustryChart';
+import { SalaryDistributionChart } from '../../components/admin/charts/SalaryDistributionChart';
+import { TopProvincesWidget } from '../../components/admin/charts/TopProvincesWidget';
 
 interface AdminDashboardProps {
   initialTab?: AdminTab;
@@ -325,32 +327,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
 
                 {/* METRICS SUMMARY CARDS */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
                   <AdminStatCard
                     title="Tổng tài khoản"
                     value={analytics?.overview?.totalAccounts ?? 0}
-                    subValue="Tài khoản toàn hệ thống"
+                    subValue={`UV: ${analytics?.overview?.accountsByRole?.find(r => r.role === 'candidate')?.count || 0} • NTD: ${analytics?.overview?.accountsByRole?.find(r => r.role === 'employer')?.count || 0}`}
                     icon={<Users className="w-4 h-4" />}
                     trend={{ value: 5, isPositive: true, label: '+5%' }}
                   />
                   <AdminStatCard
                     title="Doanh nghiệp"
                     value={analytics?.overview?.accountsByRole?.find((r) => r.role === 'employer')?.count ?? 0}
-                    subValue="Nhà tuyển dụng đã đăng ký"
+                    subValue={`Đã xác minh: ${analytics?.employerVerificationBreakdown?.find(v => v.status === 'verified')?.count || 0}`}
                     icon={<Building2 className="w-4 h-4" />}
                     trend={{ value: 12, isPositive: true, label: '+12%' }}
                   />
                   <AdminStatCard
-                    title="Tin tuyển dụng"
-                    value={analytics?.overview?.totalJobs ?? 0}
-                    subValue="Full-time & Small Job"
+                    title="Tin Full-time"
+                    value={Math.max(0, (analytics?.overview?.totalJobs || 0) - (analytics?.overview?.totalSmallJobs || 0))}
+                    subValue="Việc làm dài hạn"
                     icon={<Briefcase className="w-4 h-4" />}
                     trend={{ value: 8, isPositive: true, label: '+8%' }}
                   />
                   <AdminStatCard
+                    title="Việc ngắn hạn"
+                    value={analytics?.overview?.totalSmallJobs ?? 0}
+                    subValue={`${analytics?.overview?.activeSmallJobs ?? 0} đang mở • ${analytics?.overview?.smallJobRegistrations ?? 0} ca`}
+                    icon={<Clock className="w-4 h-4" />}
+                    trend={{ value: 20, isPositive: true, label: '+20%' }}
+                  />
+                  <AdminStatCard
+                    title="JobBee AI"
+                    value={(analytics?.overview?.aiCvAnalyses || 0) + (analytics?.overview?.aiChatbotSessions || 0)}
+                    subValue={`${analytics?.overview?.aiCvAnalyses || 0} CV • ${analytics?.overview?.aiChatbotSessions || 0} chat`}
+                    icon={<Sparkles className="w-4 h-4 text-yellow-400" />}
+                    trend={{ value: 35, isPositive: true, label: '+35%' }}
+                  />
+                  <AdminStatCard
                     title="Lượt ứng tuyển"
-                    value={analytics?.overview?.totalApplications ?? 0}
-                    subValue="Hồ sơ & ca làm việc"
+                    value={(analytics?.overview?.totalApplications || 0) + (analytics?.overview?.smallJobRegistrations || 0)}
+                    subValue={`${analytics?.overview?.totalApplications || 0} đơn • ${analytics?.overview?.smallJobRegistrations || 0} ca`}
                     icon={<TrendingUp className="w-4 h-4" />}
                     trend={{ value: 15, isPositive: true, label: '+15%' }}
                   />
@@ -379,8 +395,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                 </div>
 
-                {/* INDUSTRY DISTRIBUTION */}
-                <JobsByIndustryChart data={analytics?.jobsByIndustry || []} />
+                {/* CHARTS ROW 4: SALARY & PROVINCE DISTRIBUTION */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <SalaryDistributionChart data={analytics?.salaryBreakdown} />
+                  <TopProvincesWidget data={analytics?.topProvinces || []} />
+                </div>
               </div>
             )}
 
