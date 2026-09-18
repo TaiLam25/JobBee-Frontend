@@ -9,7 +9,8 @@ import type {
   SmallJobRegistration,
   Review,
   Notification,
-  AIMatchAnalysisResult,
+  AICVAnalysisResult,
+  CVAnalysisIndustry,
   AISkillAdviceResult,
   AICareerGuidanceResult,
   SystemStatistics,
@@ -289,22 +290,17 @@ export const aiApi = {
     const res = await apiClient.post('/ai/chat', { question, support_type });
     return (res.data?.data || res.data) as { answer: string; timestamp: string };
   },
-  analyzeMatch: async (job_id: number, cv_id?: number) => {
-    const res = await apiClient.post('/ai/match-analysis', { job_id, cv_id });
-    return (res.data?.data || res.data) as AIMatchAnalysisResult;
-  },
-  matchCVFile: async (file: File, options?: { job_id?: number; job_description?: string; requirements?: string; title?: string }) => {
+  analyzeCV: async (file: File) => {
     const formData = new FormData();
-    formData.append('file', file);
-    if (options?.job_id) formData.append('job_id', String(options.job_id));
-    if (options?.job_description) formData.append('job_description', options.job_description);
-    if (options?.requirements) formData.append('requirements', options.requirements);
-    if (options?.title) formData.append('title', options.title);
-
-    const res = await apiClient.post('/ai/match-cv-file', formData, {
+    formData.append('cv', file);
+    const res = await apiClient.post('/ai/cv-analysis', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return (res.data?.data || res.data) as AIMatchAnalysisResult;
+    return (res.data?.data || res.data) as AICVAnalysisResult;
+  },
+  getCVAnalysisHistory: async () => {
+    const res = await apiClient.get('/ai/cv-analysis/history');
+    return (res.data?.data || res.data || []) as AICVAnalysisResult[];
   },
   parseCVFile: async (file: File) => {
     const formData = new FormData();
@@ -313,10 +309,6 @@ export const aiApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return (res.data?.data || res.data) as Partial<CVVersion>;
-  },
-  getJobSuggestions: async () => {
-    const res = await apiClient.get('/ai/job-suggestions');
-    return (res.data?.data || res.data || []) as (JobPosting & { ai_match_score?: number; ai_recommendation_reason?: string })[];
   },
   getSkillAdvice: async () => {
     const res = await apiClient.get('/ai/skill-advice');

@@ -6,7 +6,6 @@ import { authApi, profileApi, companyApi } from './api';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { AIChatDrawer } from './components/AIChatDrawer';
-import { MatchAnalysisModal } from './components/MatchAnalysisModal';
 import { NotificationModal } from './components/common/NotificationModal';
 import { useRealtimeNotifications } from './hooks/useRealtimeNotifications';
 
@@ -22,6 +21,7 @@ import { CVManagerView } from './views/candidate/CVManagerView';
 import { ApplicationsTrackerView } from './views/candidate/ApplicationsTrackerView';
 import { SmallJobMyRegistrationsView } from './views/candidate/SmallJobMyRegistrationsView';
 import { CareerAdviceView } from './views/candidate/CareerAdviceView';
+import { CVAnalysisView } from './views/candidate/CVAnalysisView';
 
 // Employer Views
 import { EmployerDashboard } from './views/employer/EmployerDashboard';
@@ -97,10 +97,6 @@ function MainApp() {
 
   // Selected Job for Detail
   const [selectedJob, setSelectedJob] = useState<JobPosting | null>(null);
-
-  // AI Match Modal
-  const [matchModalJob, setMatchModalJob] = useState<JobPosting | null>(null);
-  const [matchModalOpen, setMatchModalOpen] = useState(false);
 
   // Check auth session on boot
   useEffect(() => {
@@ -183,11 +179,6 @@ function MainApp() {
     navigate('job-detail');
   };
 
-  const handleAIMatch = (job: JobPosting) => {
-    setMatchModalJob(job);
-    setMatchModalOpen(true);
-  };
-
   // Dedicated Standalone Admin Layout (Completely separate from Candidate/Employer UI)
   if (user?.role === 'admin') {
     return (
@@ -222,7 +213,6 @@ function MainApp() {
             user={user}
             onNavigate={navigate}
             onViewJob={handleViewJob}
-            onAIMatch={handleAIMatch}
           />
         )}
 
@@ -230,7 +220,6 @@ function MainApp() {
           <JobsView
             initialFilter={viewParams}
             onViewJob={handleViewJob}
-            onAIMatch={handleAIMatch}
           />
         )}
 
@@ -238,7 +227,6 @@ function MainApp() {
           <JobsView
             initialFilter={{ type: 'small_job' }}
             onViewJob={handleViewJob}
-            onAIMatch={handleAIMatch}
           />
         )}
 
@@ -247,7 +235,6 @@ function MainApp() {
             job={selectedJob}
             user={user}
             onBack={() => navigate('jobs')}
-            onAIMatch={handleAIMatch}
             onNavigate={navigate}
           />
         )}
@@ -285,6 +272,9 @@ function MainApp() {
             )}
             {currentView === 'candidate-cvs' && (
               <CVManagerView />
+            )}
+            {currentView === 'candidate-cv-analysis' && (
+              <CVAnalysisView onNavigate={navigate} />
             )}
             {currentView === 'candidate-applications' && (
               <ApplicationsTrackerView />
@@ -331,18 +321,6 @@ function MainApp() {
 
       {/* Floating Interactive AI Assistant Drawer */}
       <AIChatDrawer />
-
-      {/* AI Match Analysis Modal Dialog */}
-      <MatchAnalysisModal
-        job={matchModalJob}
-        isOpen={matchModalOpen}
-        onClose={() => setMatchModalOpen(false)}
-        onApplyWithCV={(jobId, cvId) => {
-          if (selectedJob && selectedJob.id === jobId) {
-            navigate('job-detail');
-          }
-        }}
-      />
 
       {/* Realtime Centered Notification Modal Popup */}
       <NotificationModal

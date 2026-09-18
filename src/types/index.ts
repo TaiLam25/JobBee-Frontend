@@ -255,13 +255,20 @@ export interface SmallJobStats {
   total_active_registrations: number;
 }
 
-export interface AIMatchAnalysisResult {
-  match_score: number;
-  parsed_cv_summary?: string;
+export interface CVAnalysisIndustry {
+  industry_id: number;
+  industry_name: string;
+  confidence_score: number;
+  reason: string;
+}
+
+export interface AICVAnalysisResult {
+  id?: number;
   file_name?: string;
-  strengths: string[];
-  missing_skills: string[];
-  recommendations: string[];
+  extracted_summary?: string;
+  industries: CVAnalysisIndustry[];
+  analyzed_at?: string;
+  timestamp?: string;
 }
 
 export interface RecommendedCareer {

@@ -177,13 +177,22 @@ export const Navbar: React.FC<NavbarProps> = ({ user, currentView, onNavigate, o
                     Ca làm
                   </button>
                   <button
+                    onClick={() => onNavigate('candidate-cv-analysis')}
+                    className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+                      currentView === 'candidate-cv-analysis' ? 'text-indigo-700 bg-indigo-50/80 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                    Phân tích CV bằng AI
+                  </button>
+                  <button
                     onClick={() => onNavigate('candidate-career-advice')}
                     className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
                       currentView === 'candidate-career-advice' ? 'text-indigo-700 bg-indigo-50/80 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                     }`}
                   >
                     <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                    Lộ trình và Gợi ý AI
+                    Lộ trình & Gợi ý nghề
                   </button>
                 </>
               )}
@@ -394,11 +403,18 @@ export const Navbar: React.FC<NavbarProps> = ({ user, currentView, onNavigate, o
                             Quản lý đa bản CV
                           </button>
                           <button
-                            onClick={() => { onNavigate('candidate-career-advice'); setUserDropdownOpen(false); }}
-                            className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50/50 flex items-center gap-2.5 font-medium"
+                            onClick={() => { onNavigate('candidate-cv-analysis'); setUserDropdownOpen(false); }}
+                            className="w-full px-4 py-2 text-left text-sm text-indigo-600 hover:bg-indigo-50/50 flex items-center gap-2.5 font-medium"
                           >
-                            <Sparkles className="w-4 h-4 text-blue-500" />
-                            Lộ trình và Gợi ý AI
+                            <Sparkles className="w-4 h-4 text-indigo-500" />
+                            Phân tích CV bằng AI
+                          </button>
+                          <button
+                            onClick={() => { onNavigate('candidate-career-advice'); setUserDropdownOpen(false); }}
+                            className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2.5"
+                          >
+                            <Sparkles className="w-4 h-4 text-slate-400" />
+                            Lộ trình & Gợi ý nghề
                           </button>
                         </>
                       )}
@@ -494,11 +510,18 @@ export const Navbar: React.FC<NavbarProps> = ({ user, currentView, onNavigate, o
                 Quản lý đa bản CV
               </button>
               <button
-                onClick={() => { onNavigate('candidate-career-advice'); setMobileMenuOpen(false); }}
-                className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                onClick={() => { onNavigate('candidate-cv-analysis'); setMobileMenuOpen(false); }}
+                className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-600 hover:bg-indigo-50 flex items-center gap-2"
               >
                 <Sparkles className="w-4 h-4" />
-                Lộ trình và Gợi ý việc AI
+                Phân tích CV bằng AI
+              </button>
+              <button
+                onClick={() => { onNavigate('candidate-career-advice'); setMobileMenuOpen(false); }}
+                className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4 text-slate-400" />
+                Lộ trình & Gợi ý nghề
               </button>
             </>
           )}

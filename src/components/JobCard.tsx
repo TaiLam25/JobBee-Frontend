@@ -20,7 +20,6 @@ interface JobCardProps {
   isSaved?: boolean;
   onToggleSave?: (jobId: number) => void;
   onViewDetails: (job: JobPosting) => void;
-  onAIMatch?: (job: JobPosting) => void;
 }
 
 export const JobCard: React.FC<JobCardProps> = ({
@@ -28,7 +27,6 @@ export const JobCard: React.FC<JobCardProps> = ({
   isSaved = false,
   onToggleSave,
   onViewDetails,
-  onAIMatch,
 }) => {
   const isSmallJob = job.job_type === 'small_job';
 
@@ -185,19 +183,9 @@ export const JobCard: React.FC<JobCardProps> = ({
         </span>
 
         <div className="flex items-center gap-2">
-          {onAIMatch && !isSmallJob && (
-            <button
-              onClick={() => onAIMatch(job)}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors font-medium text-xs focus:outline-hidden"
-              title="Phân tích mức độ phù hợp với CV của bạn"
-            >
-              <Sparkles className="w-3 h-3 text-blue-600" />
-              So khớp AI
-            </button>
-          )}
           <button
             onClick={() => onViewDetails(job)}
-            className="inline-flex items-center gap-1 font-semibold text-slate-700 hover:text-blue-600 transition-colors"
+            className="inline-flex items-center gap-1 font-semibold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
           >
             Chi tiết
             <ArrowRight className="w-3.5 h-3.5" />

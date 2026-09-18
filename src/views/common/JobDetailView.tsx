@@ -23,7 +23,6 @@ interface JobDetailViewProps {
   job: JobPosting;
   user: User | null;
   onBack: () => void;
-  onAIMatch: (job: JobPosting) => void;
   onNavigate: (view: string) => void;
 }
 
@@ -31,7 +30,6 @@ export const JobDetailView: React.FC<JobDetailViewProps> = ({
   job,
   user,
   onBack,
-  onAIMatch,
   onNavigate,
 }) => {
   const [cvs, setCvs] = useState<CVVersion[]>([]);
@@ -249,16 +247,6 @@ export const JobDetailView: React.FC<JobDetailViewProps> = ({
 
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto shrink-0">
-            {!isSmallJob && (
-              <button
-                onClick={() => onAIMatch(job)}
-                className="px-4 py-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-blue-200/60 transition-colors shadow-2xs"
-              >
-                <Sparkles className="w-4 h-4 text-blue-600" />
-                So khớp độ phù hợp AI
-              </button>
-            )}
-
             {isSmallJob ? (
               <button
                 onClick={handleSmallJobRegister}

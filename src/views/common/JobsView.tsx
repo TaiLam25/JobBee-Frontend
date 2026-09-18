@@ -9,20 +9,18 @@ import { JobCard } from '../../components/JobCard';
 import { JobFilterBar, FilterState } from '../../components/JobFilterBar';
 
 interface JobsViewProps {
-  initialFilter?: { keyword?: string; location?: string; type?: string };
+  initialFilter?: { keyword?: string; location?: string; type?: string; industry_id?: number; selectedIndustryIds?: number[] };
   onViewJob: (job: JobPosting) => void;
-  onAIMatch: (job: JobPosting) => void;
 }
 
 export const JobsView: React.FC<JobsViewProps> = ({
   initialFilter,
   onViewJob,
-  onAIMatch,
 }) => {
   const [filters, setFilters] = useState<FilterState>({
     keyword: initialFilter?.keyword || '',
     provinceId: null,
-    selectedIndustryIds: [],
+    selectedIndustryIds: initialFilter?.selectedIndustryIds || (initialFilter?.industry_id ? [initialFilter.industry_id] : []),
     salaryMin: null,
     salaryMax: null,
     includeNegotiable: true,
@@ -36,6 +34,20 @@ export const JobsView: React.FC<JobsViewProps> = ({
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+
+  useEffect(() => {
+    if (initialFilter) {
+      setFilters((prev) => ({
+        ...prev,
+        keyword: initialFilter.keyword !== undefined ? initialFilter.keyword : prev.keyword,
+        selectedIndustryIds: initialFilter.selectedIndustryIds !== undefined 
+          ? initialFilter.selectedIndustryIds 
+          : (initialFilter.industry_id ? [initialFilter.industry_id] : prev.selectedIndustryIds),
+        jobType: initialFilter.type !== undefined ? initialFilter.type : prev.jobType,
+      }));
+      setPage(1);
+    }
+  }, [initialFilter]);
 
   useEffect(() => {
     fetchJobs();
@@ -154,7 +166,6 @@ export const JobsView: React.FC<JobsViewProps> = ({
               key={job.id}
               job={job}
               onViewDetails={onViewJob}
-              onAIMatch={onAIMatch}
             />
           ))}
         </div>

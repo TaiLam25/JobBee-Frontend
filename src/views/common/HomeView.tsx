@@ -22,14 +22,12 @@ interface HomeViewProps {
   user: User | null;
   onNavigate: (view: string, params?: any) => void;
   onViewJob: (job: JobPosting) => void;
-  onAIMatch: (job: JobPosting) => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
   user,
   onNavigate,
   onViewJob,
-  onAIMatch,
 }) => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
@@ -272,7 +270,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 key={job.id}
                 job={job}
                 onViewDetails={onViewJob}
-                onAIMatch={onAIMatch}
               />
             ))}
           </div>
@@ -311,7 +308,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 key={job.id}
                 job={job}
                 onViewDetails={onViewJob}
-                onAIMatch={onAIMatch}
               />
             ))}
           </div>
