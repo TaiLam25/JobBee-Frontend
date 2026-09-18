@@ -76,13 +76,10 @@ export const ApplicationsTrackerView: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       {/* Header */}
-      <div className="space-y-2">
+      <div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900">
           Theo dõi Đơn ứng tuyển
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500">
-          Quản lý toàn bộ hồ sơ đã nộp và theo dõi dòng thời gian xử lý 7 giai đoạn từ nhà tuyển dụng.
-        </p>
       </div>
 
       {/* Counter Cards */}

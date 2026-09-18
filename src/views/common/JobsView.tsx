@@ -117,9 +117,6 @@ export const JobsView: React.FC<JobsViewProps> = ({
           <h1 className="text-2xl sm:text-4xl font-black">
             Tìm kiếm Việc làm & Ca làm linh hoạt
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300">
-            Bộ lọc tìm việc đa ngành nghề phủ sóng trên toàn bộ 34 Tỉnh/Thành phố mới cùng thanh trượt khoảng lương chính xác và kiểm định an toàn.
-          </p>
         </div>
       </div>
 

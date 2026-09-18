@@ -163,9 +163,6 @@ export const CareerAdviceView: React.FC<CareerAdviceViewProps> = ({ onViewJob })
           Khai vấn Nghề nghiệp & Chọn nghề bằng AI (Ikigai Model)
         </div>
         <h1 className="text-2xl sm:text-4xl font-black">Lộ trình & Gợi ý Chọn Nghề AI</h1>
-        <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-          Nhập sở thích, định hướng và thế mạnh của bạn. Trí tuệ nhân tạo sẽ phân tích điểm giao thoa để chọn ra nghề nghiệp phù hợp nhất và xây dựng lộ trình học tập, phát triển từng bước.
-        </p>
       </div>
 
       {/* Input Form Section */}

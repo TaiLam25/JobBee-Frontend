@@ -161,9 +161,6 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
             Phân tích CV & Định hướng Ngành nghề
           </h1>
-          <p className="text-blue-100 text-xs md:text-sm max-w-xl">
-            Tải lên CV của bạn để AI tự động trích xuất kỹ năng, kinh nghiệm và đề xuất top các ngành nghề phù hợp nhất trên hệ thống.
-          </p>
         </div>
 
         {/* Tab Switcher */}

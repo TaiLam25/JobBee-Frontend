@@ -145,9 +145,6 @@ export const CVManagerView: React.FC = () => {
             Hồ sơ tuyển dụng chính thống
           </div>
           <h1 className="text-2xl sm:text-3xl font-black">Quản lý Tệp CV (PDF / DOCX)</h1>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-            Tải lên trực tiếp tệp CV hoàn chỉnh của bạn (.pdf hoặc .docx). File gốc sẽ được gửi trực tiếp và nguyên vẹn đến Nhà tuyển dụng khi bạn ứng tuyển.
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap shrink-0">

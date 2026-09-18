@@ -171,13 +171,10 @@ export const PostJobView: React.FC<PostJobViewProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <div className="space-y-2">
+      <div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900">
           Đăng tin Tuyển dụng mới
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500">
-          Tạo tin tuyển dụng toàn thời gian hoặc tạo ca làm việc ngắn hạn (Small Job) cho ứng viên theo đúng 34 tỉnh/thành phố và ngành nghề đa dạng.
-        </p>
       </div>
 
       {success && (

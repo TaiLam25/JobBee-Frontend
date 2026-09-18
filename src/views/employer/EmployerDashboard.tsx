@@ -119,9 +119,6 @@ export const EmployerDashboard: React.FC<EmployerDashboardProps> = ({
           <h1 className="text-2xl sm:text-3xl font-black">
             {company?.company_name || user.company_name || 'Bảng điều khiển Nhà tuyển dụng'}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-2xl">
-            Theo dõi hiệu suất tuyển dụng, phản hồi ứng viên nhanh chóng và ứng dụng AI phân tích CV ứng viên.
-          </p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2.5 shrink-0">

@@ -112,9 +112,6 @@ export const SmallJobMyRegistrationsView: React.FC = () => {
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900">
           Ca làm Small Job của tôi
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500">
-          Theo dõi trạng thái xác nhận ca làm, hoàn thành công việc và gửi đánh giá để tích lũy điểm uy tín.
-        </p>
       </div>
 
       {/* List of Registrations */}

@@ -75,14 +75,6 @@ export const ManageJobsView: React.FC<ManageJobsViewProps> = ({ onNavigate }) =>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900">Quản lý Tin Tuyển Dụng</h1>
-          <p className="text-xs sm:text-sm text-slate-500">
-            Theo dõi trạng thái tin đăng và số lượt ứng tuyển/đăng ký.
-          </p>
-          {jobs.some(j => j.job_type === 'full_time') && (
-            <p className="text-[11px] text-blue-600 font-medium mt-0.5">
-              Tin toàn thời gian hỗ trợ AI Xếp hạng hồ sơ ứng viên.
-            </p>
-          )}
         </div>
         <button
           onClick={() => onNavigate('employer-post-job')}

@@ -149,11 +149,8 @@ export const CompanyVerificationView: React.FC<CompanyVerificationViewProps> = (
 
       {/* Header & Verification Status Badge */}
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-        <div className="space-y-1">
+        <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900">Hồ sơ & Xác minh Doanh nghiệp</h1>
-          <p className="text-xs sm:text-sm text-slate-500">
-            Xác minh tư cách pháp nhân để nhận Huy hiệu Đã xác minh và mở khóa tính năng đăng tin Full-time không giới hạn.
-          </p>
         </div>
 
         <div className="shrink-0">

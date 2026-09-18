@@ -58,7 +58,6 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             </span>
           )}
         </div>
-        <p className="text-[11px] text-slate-400 hidden sm:block mt-0.5">{current.subtitle}</p>
       </div>
 
       {/* Action Controls */}
