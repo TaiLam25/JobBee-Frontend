@@ -255,6 +255,11 @@ export interface SmallJobStats {
   total_active_registrations: number;
 }
 
+export interface MatchingJobPosting extends JobPosting {
+  match_score?: number;
+  match_reason?: string;
+}
+
 export interface CVAnalysisIndustry {
   industry_id: number;
   industry_name: string;
@@ -266,7 +271,8 @@ export interface AICVAnalysisResult {
   id?: number;
   file_name?: string;
   extracted_summary?: string;
-  industries: CVAnalysisIndustry[];
+  matching_jobs?: MatchingJobPosting[];
+  industries?: CVAnalysisIndustry[];
   analyzed_at?: string;
   timestamp?: string;
 }

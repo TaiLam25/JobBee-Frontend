@@ -91,6 +91,7 @@ function MainApp() {
 
   const [currentView, setCurrentView] = useState<string>('home');
   const [viewParams, setViewParams] = useState<any>(null);
+  const [historyStack, setHistoryStack] = useState<{ view: string; params?: any }[]>([{ view: 'home' }]);
 
   // Realtime Notifications with Centered Modal FIFO Queue
   const { currentModalNotification, queueLength, dismissCurrentModal } = useRealtimeNotifications(user);
@@ -151,9 +152,31 @@ function MainApp() {
   };
 
   const navigate = (view: string, params?: any) => {
+    if (view === currentView && JSON.stringify(params) === JSON.stringify(viewParams)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setHistoryStack(prev => [...prev, { view, params }]);
     setCurrentView(view);
     setViewParams(params || null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBack = () => {
+    if (historyStack.length > 1) {
+      const nextStack = [...historyStack];
+      nextStack.pop(); // remove current view
+      const prev = nextStack[nextStack.length - 1];
+      setHistoryStack(nextStack);
+      setCurrentView(prev.view);
+      setViewParams(prev.params || null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      setCurrentView('home');
+      setViewParams(null);
+      setHistoryStack([{ view: 'home' }]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleLoginSuccess = (u: User) => {
@@ -203,6 +226,8 @@ function MainApp() {
         currentView={currentView}
         onNavigate={navigate}
         onLogout={handleLogout}
+        onBack={handleBack}
+        canGoBack={historyStack.length > 1 || currentView !== 'home'}
       />
 
       {/* Main Content Area */}
@@ -234,7 +259,7 @@ function MainApp() {
           <JobDetailView
             job={selectedJob}
             user={user}
-            onBack={() => navigate('jobs')}
+            onBack={handleBack}
             onNavigate={navigate}
           />
         )}
@@ -274,7 +299,7 @@ function MainApp() {
               <CVManagerView />
             )}
             {currentView === 'candidate-cv-analysis' && (
-              <CVAnalysisView onNavigate={navigate} />
+              <CVAnalysisView onNavigate={navigate} onViewJob={handleViewJob} onBack={handleBack} />
             )}
             {currentView === 'candidate-applications' && (
               <ApplicationsTrackerView />

@@ -10,6 +10,7 @@ import type {
   Review,
   Notification,
   AICVAnalysisResult,
+  MatchingJobPosting,
   CVAnalysisIndustry,
   AISkillAdviceResult,
   AICareerGuidanceResult,

@@ -13,7 +13,8 @@ import {
   X, 
   CheckCircle,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  ArrowLeft
 } from 'lucide-react';
 import type { User, Notification } from '../types';
 import { notificationApi } from '../api';
@@ -23,9 +24,11 @@ interface NavbarProps {
   currentView: string;
   onNavigate: (view: string, params?: any) => void;
   onLogout: () => void;
+  onBack?: () => void;
+  canGoBack?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ user, currentView, onNavigate, onLogout }) => {
+export const Navbar: React.FC<NavbarProps> = ({ user, currentView, onNavigate, onLogout, onBack, canGoBack }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -116,8 +119,19 @@ export const Navbar: React.FC<NavbarProps> = ({ user, currentView, onNavigate, o
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Brand Logo */}
-          <div className="flex items-center gap-8">
+          {/* Brand Logo & Back Button */}
+          <div className="flex items-center gap-4 sm:gap-6">
+            {canGoBack && onBack && (
+              <button
+                onClick={onBack}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                title="Quay lại trang trước"
+              >
+                <ArrowLeft className="w-4 h-4 text-slate-600" />
+                <span className="hidden sm:inline">Quay lại</span>
+              </button>
+            )}
+
             <button 
               onClick={() => onNavigate('home')}
               className="flex items-center focus:outline-hidden group py-1"

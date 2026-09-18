@@ -5,6 +5,8 @@ import {
   FileText,
   Clock,
   ArrowRight,
+  ArrowLeft,
+  Briefcase,
   History,
   RefreshCw,
   Search,
@@ -12,16 +14,22 @@ import {
   ChevronRight,
   BarChart3,
   Award,
-  AlertCircle
+  AlertCircle,
+  Building2,
+  MapPin,
+  DollarSign,
+  ShieldCheck
 } from 'lucide-react';
-import type { AICVAnalysisResult, CVAnalysisIndustry } from '../../types';
+import type { AICVAnalysisResult, MatchingJobPosting, JobPosting } from '../../types';
 import { aiApi } from '../../api';
 
 interface CVAnalysisViewProps {
   onNavigate?: (view: string, params?: any) => void;
+  onViewJob?: (job: JobPosting) => void;
+  onBack?: () => void;
 }
 
-export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) => {
+export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate, onViewJob, onBack }) => {
   const [activeTab, setActiveTab] = useState<'analyze' | 'history'>('analyze');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -102,7 +110,6 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
       setErrorMsg(null);
       const res = await aiApi.analyzeCV(selectedFile);
       setCurrentResult(res);
-      // Reload history to include the new session
       loadHistory();
     } catch (err: any) {
       console.error('Analysis failed:', err);
@@ -112,12 +119,11 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
     }
   };
 
-  const handleNavigateToIndustry = (industry: CVAnalysisIndustry) => {
-    if (onNavigate) {
-      onNavigate('jobs', {
-        industry_id: industry.industry_id,
-        selectedIndustryIds: [industry.industry_id]
-      });
+  const handleJobClick = (job: MatchingJobPosting) => {
+    if (onViewJob) {
+      onViewJob(job);
+    } else if (onNavigate) {
+      onNavigate('job-detail');
     }
   };
 
@@ -126,15 +132,15 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
     setActiveTab('analyze');
   };
 
-  const getScoreBadge = (score: number) => {
-    if (score >= 80) {
+  const getScoreBadge = (score: number = 75) => {
+    if (score >= 85) {
       return {
         bg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
         bar: 'bg-emerald-500',
         text: 'Rất phù hợp'
       };
     }
-    if (score >= 60) {
+    if (score >= 70) {
       return {
         bg: 'bg-blue-50 text-blue-700 border-blue-200',
         bar: 'bg-blue-500',
@@ -150,7 +156,20 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-      {/* Header */}
+      {/* Top Navigation & Back Button */}
+      {onBack && (
+        <div className="flex items-center justify-between">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-2xs hover:shadow-xs cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4 text-slate-600" />
+            <span>Quay lại</span>
+          </button>
+        </div>
+      )}
+
+      {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-700 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none" />
         <div className="space-y-2 relative z-10">
@@ -159,7 +178,7 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
             Trí tuệ nhân tạo JobBee AI
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-            Phân tích CV & Định hướng Ngành nghề
+            Phân tích CV & Tìm việc làm phù hợp
           </h1>
         </div>
 
@@ -259,7 +278,7 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-100">
                 <div className="flex items-center gap-2 text-xs text-slate-500">
                   <Check className="w-4 h-4 text-emerald-500" />
-                  <span>Bảo mật 100% • Đối chiếu 14 ngành nghề tuyển dụng chuẩn</span>
+                  <span>AI tự động đối chiếu các tin tuyển dụng đang hoạt động</span>
                 </div>
 
                 <button
@@ -270,7 +289,7 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
                   {analyzing ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>JobBee AI đang phân tích CV...</span>
+                      <span>JobBee AI đang tìm việc phù hợp...</span>
                     </>
                   ) : (
                     <>
@@ -334,51 +353,92 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
                 )}
               </div>
 
-              {/* Recommended Industries List */}
+              {/* Matching Job Postings List */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
-                    <Award className="w-5 h-5 text-indigo-600" />
-                    Top ngành nghề phù hợp nhất ({currentResult.industries?.length || 0})
+                    <Briefcase className="w-5 h-5 text-indigo-600" />
+                    Danh sách Tin Tuyển Dụng phù hợp nhất ({currentResult.matching_jobs?.length || 0})
                   </h3>
                   <span className="text-xs text-slate-500">Sắp xếp theo độ tương thích giảm dần</span>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
-                  {currentResult.industries && currentResult.industries.length > 0 ? (
-                    currentResult.industries.map((ind, idx) => {
-                      const badge = getScoreBadge(ind.confidence_score);
+                  {currentResult.matching_jobs && currentResult.matching_jobs.length > 0 ? (
+                    currentResult.matching_jobs.map((job, idx) => {
+                      const score = job.match_score || 75;
+                      const badge = getScoreBadge(score);
                       return (
                         <div
-                          key={ind.industry_id || idx}
+                          key={job.id || idx}
                           className="bg-white rounded-3xl border border-slate-200/80 p-5 md:p-6 shadow-sm hover:shadow-md transition-all hover:border-blue-300 space-y-4 relative overflow-hidden group"
                         >
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                            <div className="flex items-start gap-3.5">
-                              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-extrabold text-sm flex items-center justify-center flex-shrink-0 shadow-md">
-                                #{idx + 1}
+                            <div className="flex items-start gap-4">
+                              {/* Company Logo / Rank */}
+                              <div className="relative">
+                                {job.company_logo ? (
+                                  <img
+                                    src={job.company_logo}
+                                    alt={job.company_name}
+                                    className="w-14 h-14 rounded-2xl object-cover border border-slate-200 shadow-sm"
+                                  />
+                                ) : (
+                                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm">
+                                    <Building2 className="w-7 h-7" />
+                                  </div>
+                                )}
+                                <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-gradient-to-br from-indigo-600 to-blue-600 text-white font-black text-[11px] flex items-center justify-center shadow-md">
+                                  #{idx + 1}
+                                </div>
                               </div>
-                              <div className="space-y-1">
-                                <h4 className="text-base font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
-                                  {ind.industry_name}
-                                </h4>
-                                <div className="flex items-center gap-2">
-                                  <span
-                                    className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${badge.bg}`}
+
+                              {/* Job Details */}
+                              <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h4 
+                                    onClick={() => handleJobClick(job)}
+                                    className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors cursor-pointer"
                                   >
-                                    {badge.text} • {ind.confidence_score}%
+                                    {job.title}
+                                  </h4>
+                                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${badge.bg}`}>
+                                    {badge.text} • {score}%
                                   </span>
+                                </div>
+
+                                <div className="flex items-center gap-3 text-xs text-slate-600 flex-wrap">
+                                  <span className="font-semibold text-slate-800 flex items-center gap-1">
+                                    <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                                    {job.company_name}
+                                  </span>
+                                  <span className="flex items-center gap-1 text-slate-500">
+                                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                                    {job.location || 'Toàn quốc'}
+                                  </span>
+                                  <span className="flex items-center gap-1 font-bold text-emerald-600">
+                                    <DollarSign className="w-3.5 h-3.5" />
+                                    {job.salary || 'Thỏa thuận'}
+                                  </span>
+                                  {job.job_type === 'small_job' ? (
+                                    <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
+                                      Small Job
+                                    </span>
+                                  ) : (
+                                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold">
+                                      Toàn thời gian
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             </div>
 
-                            {/* CTA Button */}
+                            {/* Action CTA Button */}
                             <button
-                              onClick={() => handleNavigateToIndustry(ind)}
-                              className="px-4 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer self-stretch sm:self-center border border-blue-200 group/btn flex-shrink-0"
+                              onClick={() => handleJobClick(job)}
+                              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer self-stretch sm:self-center shrink-0 group/btn"
                             >
-                              <Search className="w-3.5 h-3.5" />
-                              <span>Xem tin tuyển dụng</span>
+                              <span>Xem chi tiết việc làm</span>
                               <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
                             </button>
                           </div>
@@ -387,21 +447,23 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
                           <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all duration-1000 ${badge.bar}`}
-                              style={{ width: `${ind.confidence_score}%` }}
+                              style={{ width: `${score}%` }}
                             />
                           </div>
 
-                          {/* AI Reason explanation */}
-                          <div className="text-xs text-slate-600 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 leading-relaxed">
-                            <span className="font-bold text-slate-700">Lý do gợi ý từ AI: </span>
-                            {ind.reason}
-                          </div>
+                          {/* Match Reason explanation from AI */}
+                          {job.match_reason && (
+                            <div className="text-xs text-slate-700 bg-slate-50/90 p-3.5 rounded-2xl border border-slate-100 leading-relaxed">
+                              <span className="font-bold text-blue-700">Đánh giá độ phù hợp từ AI: </span>
+                              {job.match_reason}
+                            </div>
+                          )}
                         </div>
                       );
                     })
                   ) : (
                     <div className="bg-white rounded-3xl border border-slate-200 p-8 text-center text-slate-500 text-xs">
-                      Không tìm thấy ngành nghề phù hợp cụ thể. Vui lòng thử tải lên một bản CV chi tiết hơn.
+                      Không tìm thấy tin tuyển dụng nào phù hợp trực tiếp với CV. Vui lòng thử tải lên một bản CV chi tiết hơn.
                     </div>
                   )}
                 </div>
@@ -438,7 +500,7 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
               <Sparkles className="w-12 h-12 mx-auto text-slate-300" />
               <h4 className="text-sm font-bold text-slate-800">Chưa có lịch sử phân tích CV</h4>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Tải lên CV của bạn ở tab "Phân tích mới" để nhận gợi ý các ngành nghề phù hợp nhất.
+                Tải lên CV của bạn ở tab "Phân tích mới" để nhận gợi ý các tin việc làm phù hợp nhất.
               </p>
               <button
                 onClick={() => setActiveTab('analyze')}
@@ -472,23 +534,31 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate }) =>
 
                   <div className="flex items-center gap-3 flex-wrap">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      {item.industries?.slice(0, 3).map((ind, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-semibold"
-                        >
-                          {ind.industry_name} ({ind.confidence_score}%)
-                        </span>
-                      ))}
-                      {(item.industries?.length || 0) > 3 && (
+                      {item.matching_jobs && item.matching_jobs.length > 0 ? (
+                        <>
+                          {item.matching_jobs.slice(0, 2).map((mj, i) => (
+                            <span
+                              key={i}
+                              className="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-semibold"
+                            >
+                              {mj.title} ({mj.match_score || 75}%)
+                            </span>
+                          ))}
+                          {item.matching_jobs.length > 2 && (
+                            <span className="text-[10px] text-slate-400 font-semibold">
+                              +{item.matching_jobs.length - 2} tin khác
+                            </span>
+                          )}
+                        </>
+                      ) : (
                         <span className="text-[10px] text-slate-400 font-semibold">
-                          +{(item.industries?.length || 0) - 3} ngành
+                          Đã phân tích
                         </span>
                       )}
                     </div>
 
                     <span className="text-xs font-bold text-blue-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform ml-auto">
-                      Xem lại <ChevronRight className="w-4 h-4" />
+                      Xem việc làm phù hợp <ChevronRight className="w-4 h-4" />
                     </span>
                   </div>
                 </div>
