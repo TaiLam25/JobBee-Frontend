@@ -18,10 +18,11 @@ import {
   Building2,
   MapPin,
   DollarSign,
-  ShieldCheck
+  Layers,
+  CheckCircle2
 } from 'lucide-react';
-import type { AICVAnalysisResult, MatchingJobPosting, JobPosting } from '../../types';
-import { aiApi } from '../../api';
+import type { AICVAnalysisResult, MatchingJobPosting, JobPosting, CVVersion } from '../../types';
+import { aiApi, profileApi } from '../../api';
 
 interface CVAnalysisViewProps {
   onNavigate?: (view: string, params?: any) => void;
@@ -31,8 +32,18 @@ interface CVAnalysisViewProps {
 
 export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate, onViewJob, onBack }) => {
   const [activeTab, setActiveTab] = useState<'analyze' | 'history'>('analyze');
+  const [sourceMode, setSourceMode] = useState<'existing' | 'upload'>('existing');
+  
+  // Existing CVs state
+  const [myCVs, setMyCVs] = useState<CVVersion[]>([]);
+  const [loadingCVs, setLoadingCVs] = useState(false);
+  const [selectedCvId, setSelectedCvId] = useState<number | null>(null);
+
+  // Upload file state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  
+  // Analysis state
   const [analyzing, setAnalyzing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [currentResult, setCurrentResult] = useState<AICVAnalysisResult | null>(null);
@@ -44,8 +55,30 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate, onVi
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    loadExistingCVs();
     loadHistory();
   }, []);
+
+  const loadExistingCVs = async () => {
+    try {
+      setLoadingCVs(true);
+      const list = await profileApi.getMyCVs();
+      const cvList = list || [];
+      setMyCVs(cvList);
+      if (cvList.length > 0) {
+        const defaultCv = cvList.find(c => c.is_default) || cvList[0];
+        setSelectedCvId(defaultCv.id);
+        setSourceMode('existing');
+      } else {
+        setSourceMode('upload');
+      }
+    } catch (err) {
+      console.warn('Failed to load candidate CVs:', err);
+      setSourceMode('upload');
+    } finally {
+      setLoadingCVs(false);
+    }
+  };
 
   const loadHistory = async () => {
     try {
@@ -103,17 +136,26 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate, onVi
   };
 
   const handleAnalyze = async () => {
-    if (!selectedFile) return;
+    if (sourceMode === 'upload' && !selectedFile) {
+      setErrorMsg('Vui lòng chọn hoặc tải lên tệp CV của bạn.');
+      return;
+    }
+    if (sourceMode === 'existing' && !selectedCvId) {
+      setErrorMsg('Vui lòng chọn một bản CV trong tài khoản của bạn.');
+      return;
+    }
 
     try {
       setAnalyzing(true);
       setErrorMsg(null);
-      const res = await aiApi.analyzeCV(selectedFile);
+      
+      const param = sourceMode === 'upload' ? selectedFile! : selectedCvId!;
+      const res = await aiApi.analyzeCV(param);
       setCurrentResult(res);
       loadHistory();
     } catch (err: any) {
       console.error('Analysis failed:', err);
-      setErrorMsg(err?.message || 'Có lỗi xảy ra trong quá trình phân tích CV bằng AI. Vui lòng thử lại.');
+      setErrorMsg(err?.response?.data?.message || err?.message || 'Có lỗi xảy ra trong quá trình phân tích CV bằng AI. Vui lòng thử lại.');
     } finally {
       setAnalyzing(false);
     }
@@ -153,6 +195,8 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate, onVi
       text: 'Tiềm năng'
     };
   };
+
+  const isAnalyzeReady = (sourceMode === 'upload' && selectedFile) || (sourceMode === 'existing' && selectedCvId);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -212,61 +256,179 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate, onVi
       {/* Main Content Area */}
       {activeTab === 'analyze' ? (
         <div className="space-y-6">
-          {/* Upload Section */}
+          {/* Source Selection & Upload Section */}
           {!currentResult && (
             <div className="bg-white rounded-3xl border border-slate-200/80 p-6 md:p-8 shadow-sm space-y-6">
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-2xl p-8 md:p-12 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-4 ${
-                  isDragging
-                    ? 'border-blue-500 bg-blue-50/50 scale-[0.99]'
-                    : selectedFile
-                    ? 'border-emerald-400 bg-emerald-50/30'
-                    : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50/50'
-                }`}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.docx,.doc"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-
-                {selectedFile ? (
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-inner">
-                      <FileText className="w-8 h-8" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-800">{selectedFile.name}</h4>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Sẵn sàng phân tích
-                      </p>
-                    </div>
-                    <span className="text-xs font-semibold text-blue-600 hover:underline mt-1">
-                      Nhấn để chọn file khác
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
-                      <UploadCloud className="w-8 h-8" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-800">
-                        Kéo thả file CV vào đây hoặc <span className="text-blue-600 underline">duyệt từ thiết bị</span>
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Hỗ trợ định dạng PDF, DOCX (Dung lượng tối đa 5MB)
-                      </p>
-                    </div>
-                  </div>
-                )}
+              {/* Source Mode Toggle (Existing CV vs Upload New) */}
+              <div className="flex items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl w-full sm:w-fit">
+                <button
+                  type="button"
+                  onClick={() => setSourceMode('existing')}
+                  className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    sourceMode === 'existing'
+                      ? 'bg-white text-blue-600 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Layers className="w-4 h-4" />
+                  <span>Dùng CV có sẵn trong tài khoản ({myCVs.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSourceMode('upload')}
+                  className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    sourceMode === 'upload'
+                      ? 'bg-white text-blue-600 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Tải lên tệp CV mới (PDF / DOCX)</span>
+                </button>
               </div>
+
+              {/* Mode A: Select Existing CV */}
+              {sourceMode === 'existing' && (
+                <div className="space-y-4">
+                  {loadingCVs ? (
+                    <div className="py-8 text-center space-y-2">
+                      <RefreshCw className="w-6 h-6 mx-auto text-blue-600 animate-spin" />
+                      <p className="text-xs text-slate-500 font-medium">Đang tải danh sách CV của bạn...</p>
+                    </div>
+                  ) : myCVs.length === 0 ? (
+                    <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl space-y-3">
+                      <FileText className="w-10 h-10 mx-auto text-slate-300" />
+                      <h4 className="text-sm font-bold text-slate-700">Chưa có bản CV nào trong tài khoản</h4>
+                      <p className="text-xs text-slate-500 max-w-md mx-auto">
+                        Bạn có thể chuyển sang tab "Tải lên tệp CV mới" để tải file trực tiếp hoặc tạo CV mới trong phần Quản lý CV.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setSourceMode('upload')}
+                        className="px-4 py-2 rounded-xl bg-blue-50 text-blue-600 text-xs font-bold hover:bg-blue-100 transition-colors cursor-pointer"
+                      >
+                        Tải lên tệp CV mới ngay
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {myCVs.map((cv) => {
+                        const isSelected = selectedCvId === cv.id;
+                        return (
+                          <div
+                            key={cv.id}
+                            onClick={() => setSelectedCvId(cv.id)}
+                            className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start justify-between gap-3 ${
+                              isSelected
+                                ? 'border-blue-600 bg-blue-50/40 shadow-xs'
+                                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
+                            }`}
+                          >
+                            <div className="flex items-start gap-3 min-w-0">
+                              <div
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                                  isSelected
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-slate-100 text-slate-500'
+                                }`}
+                              >
+                                <FileText className="w-5 h-5" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                                    {cv.cv_name}
+                                  </h4>
+                                  {cv.is_default && (
+                                    <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-bold">
+                                      Mặc định
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-500 truncate mt-0.5">
+                                  {cv.career_orientation || 'Chưa phân loại định hướng'}
+                                </p>
+                                <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {cv.updated_date ? new Date(cv.updated_date).toLocaleDateString('vi-VN') : '---'}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex-shrink-0 mt-1">
+                              <div
+                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                  isSelected
+                                    ? 'border-blue-600 bg-blue-600 text-white'
+                                    : 'border-slate-300 bg-white'
+                                }`}
+                              >
+                                {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Mode B: Upload New File */}
+              {sourceMode === 'upload' && (
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-2xl p-8 md:p-12 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-4 ${
+                    isDragging
+                      ? 'border-blue-500 bg-blue-50/50 scale-[0.99]'
+                      : selectedFile
+                      ? 'border-emerald-400 bg-emerald-50/30'
+                      : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50/50'
+                  }`}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.docx,.doc"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+
+                  {selectedFile ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-inner">
+                        <FileText className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-800">{selectedFile.name}</h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Sẵn sàng phân tích
+                        </p>
+                      </div>
+                      <span className="text-xs font-semibold text-blue-600 hover:underline mt-1">
+                        Nhấn để chọn file khác
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
+                        <UploadCloud className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-800">
+                          Kéo thả file CV vào đây hoặc <span className="text-blue-600 underline">duyệt từ thiết bị</span>
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Hỗ trợ định dạng PDF, DOCX (Dung lượng tối đa 5MB)
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {errorMsg && (
                 <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-3">
@@ -283,7 +445,7 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate, onVi
 
                 <button
                   onClick={handleAnalyze}
-                  disabled={!selectedFile || analyzing}
+                  disabled={!isAnalyzeReady || analyzing}
                   className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs md:text-sm shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 transition-all cursor-pointer"
                 >
                   {analyzing ? (
@@ -463,7 +625,7 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate, onVi
                     })
                   ) : (
                     <div className="bg-white rounded-3xl border border-slate-200 p-8 text-center text-slate-500 text-xs">
-                      Không tìm thấy tin tuyển dụng nào phù hợp trực tiếp với CV. Vui lòng thử tải lên một bản CV chi tiết hơn.
+                      Không tìm thấy tin tuyển dụng nào phù hợp trực tiếp với CV. Vui lòng thử chọn bản CV chi tiết hơn hoặc tải lên tệp mới.
                     </div>
                   )}
                 </div>
@@ -500,7 +662,7 @@ export const CVAnalysisView: React.FC<CVAnalysisViewProps> = ({ onNavigate, onVi
               <Sparkles className="w-12 h-12 mx-auto text-slate-300" />
               <h4 className="text-sm font-bold text-slate-800">Chưa có lịch sử phân tích CV</h4>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Tải lên CV của bạn ở tab "Phân tích mới" để nhận gợi ý các tin việc làm phù hợp nhất.
+                Chọn CV của bạn ở tab "Phân tích mới" để nhận gợi ý các tin việc làm phù hợp nhất.
               </p>
               <button
                 onClick={() => setActiveTab('analyze')}

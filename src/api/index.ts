@@ -291,12 +291,17 @@ export const aiApi = {
     const res = await apiClient.post('/ai/chat', { question, support_type });
     return (res.data?.data || res.data) as { answer: string; timestamp: string };
   },
-  analyzeCV: async (file: File) => {
-    const formData = new FormData();
-    formData.append('cv', file);
-    const res = await apiClient.post('/ai/cv-analysis', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+  analyzeCV: async (fileOrCvId: File | number) => {
+    let res;
+    if (typeof fileOrCvId === 'number') {
+      res = await apiClient.post('/ai/cv-analysis', { cv_id: fileOrCvId });
+    } else {
+      const formData = new FormData();
+      formData.append('cv', fileOrCvId);
+      res = await apiClient.post('/ai/cv-analysis', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    }
     return (res.data?.data || res.data) as AICVAnalysisResult;
   },
   getCVAnalysisHistory: async () => {
