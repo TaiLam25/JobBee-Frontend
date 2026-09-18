@@ -294,12 +294,13 @@ export const aiApi = {
   analyzeCV: async (fileOrCvId: File | number) => {
     let res;
     if (typeof fileOrCvId === 'number') {
-      res = await apiClient.post('/ai/cv-analysis', { cv_id: fileOrCvId });
+      res = await apiClient.post('/ai/cv-analysis', { cv_id: fileOrCvId }, { timeout: 90000 });
     } else {
       const formData = new FormData();
       formData.append('cv', fileOrCvId);
       res = await apiClient.post('/ai/cv-analysis', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 90000,
       });
     }
     return (res.data?.data || res.data) as AICVAnalysisResult;
